@@ -7,6 +7,9 @@ public class cmsc401
 	int minCost = 0;
 	int rodSize = 0;
 	int numCuts = 0;
+	int[] tempArray = null;
+
+
 
 	public void inputTime()//Takes the input and builds the array
 	{
@@ -15,7 +18,8 @@ public class cmsc401
 		rodSize = input.nextInt();
 		numCuts = input.nextInt();
 
-		cutSpots = new int[rodSize];
+		cutSpots = new int[rodSize + 1];
+		
 
 		for(int i = 0; i < numCuts; ++i)
 		{
@@ -24,66 +28,134 @@ public class cmsc401
 
 		input.close();
 
-		cutTime(0, rodSize, 0); //Initial call to cut with full bar size being passsed
+		reduxTime(0, rodSize, 0);
+		System.out.println(minCost);
 	}
 
-	public void cutTime(int start, int end, int cutsMade)
+	public void reduxTime(int start, int end, int cutsMade)
 	{
-		int segmentSize = end - start; //Gets segment size
-		int middle = (end + start) / 2; //Finds the middle point of the segment (in terms of array position)
-		int cuttingPosition = 0; //Where the cut will happen 
+		int bestCut = -10000;
+		int cuttingPosition = 0;
+		int closestLeft = 0;
+		int closestRight = 0;
+		int segmentSize = end - start;
+		boolean clusterCut = false;
+		
+		int[] bestCuts = new int[end - start];
 
-		if(cutSpots[middle] == 1)//Is there a cut spot in the middle?
+		for(int i = start; i < end; ++i)
 		{
-			cuttingPosition = middle;
-		}
-		else//If not, find the closest cut spot to middle
-		{
-			int minDistance = 1000;
-
-			for(int i = start; i < end; ++i)
+			if(cutSpots[i] == 1 && clusterTime(i, start, end)) 
 			{
-				if(cutSpots[i] == 1)
+				int clusterLength = 1;
+				int index = i;
+
+				while(clusterTime(index, start, end))
 				{
-					if(Math.abs(i - middle) < minDistance)
+					++clusterLength;
+					++index;
+				}
+
+				if(clusterLength == segmentSize - 1) 
+				{
+					clusterCut = true;
+					cuttingPosition = (end + start) / 2;
+				}
+			}
+
+			if(cutSpots[i] == 1 && clusterCut == false)
+			{	
+				for(int j = i - 1; j >= start; --j)
+				{
+					if(cutSpots[j] == 1 || j == start)
 					{
-						minDistance = Math.abs(i - middle);
-						cuttingPosition = i;
+						closestLeft = i -j;
+						break;
 					}
 				}
+
+				for(int k = i + 1; k <= end; ++k)
+				{
+					if(cutSpots[k] == 1 || k == end)
+					{
+						closestRight = k - i;
+						break;
+					}
+				}
+				
+				bestCuts[i] = closestRight + closestLeft;
+
+				if(closestRight + closestLeft > bestCut)
+				{
+					bestCut = closestRight + closestLeft;
+					cuttingPosition = i;
+					
+				}
+
+			}
+		}
+		
+		for(int i = 0; i < bestCuts.length; ++i)
+		{
+			if(bestCuts[i] != bestCut)
+			{
+				
 			}
 		}
 
-		minCost += segmentSize; 		//Adds cost of cutting segment
-		++cutsMade;						//Increases number of cuts made
-		cutSpots[cuttingPosition] = 2;	//Makes a cut at the determined cutting
+		minCost += segmentSize;
+		cutSpots[cuttingPosition] = 2;
+		++cutsMade;
+
+		System.out.println(cuttingPosition);
 
 		if(cutsMade < numCuts)
 		{
-			for(int i = start; i < cuttingPosition; ++i)//Recursively cuts the left side of new bar until no more cut spots
+			for(int i = start; i < cuttingPosition; ++i)
 			{
 				if(cutSpots[i] == 1)
 				{
-					cutTime(start, cuttingPosition, cutsMade);
-					i = 0;
+					reduxTime(start, cuttingPosition, cutsMade);
 				}
 			}
 
-			for(int i = cuttingPosition; i < end; ++i)//Cuts right side recursively until no more cut spots on right
+			for(int i = cuttingPosition; i < end; ++i)
 			{
-				if(cutSpots[i] == 1)//If cut spot found, cut bar again
+				if(cutSpots[i] == 1)
 				{
-					cutTime(cuttingPosition, end, cutsMade);
-					i = 0;
+					reduxTime(cuttingPosition, end, cutsMade);
 				}
 			}
 		}
 	}
+
+	public boolean clusterTime(int clusterFound, int start, int end)
+	{
+		int clusterBefore = cutSpots[clusterFound - 1];
+		int clusterAfter = cutSpots[clusterFound];
+		
+		if(clusterBefore == start && clusterAfter == 1)
+		{
+			return true;
+		}
+		else if(clusterBefore == 1 && clusterAfter == 1)
+		{
+			return true;
+		}
+		else if(clusterBefore == 1 && clusterAfter == end)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 
 	public static void main(String[] args)
 	{
 		cmsc401 program = new cmsc401();
 		program.inputTime();
-		System.out.println(program.minCost);
 	}
 }
