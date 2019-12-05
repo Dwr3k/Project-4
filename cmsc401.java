@@ -19,7 +19,7 @@ public class cmsc401
 		numCuts = input.nextInt();
 
 		cutSpots = new int[rodSize + 1];
-		
+
 
 		for(int i = 0; i < numCuts; ++i)
 		{
@@ -34,14 +34,14 @@ public class cmsc401
 
 	public void reduxTime(int start, int end, int cutsMade)
 	{
-		int bestCut = -10000;
 		int cuttingPosition = 0;
 		int closestLeft = 0;
 		int closestRight = 0;
 		int segmentSize = end - start;
 		boolean clusterCut = false;
-		
-		int[] bestCuts = new int[end - start];
+		int middle = (start + end) /2;
+
+		int[] bestCuts = new int[rodSize + 1];
 
 		for(int i = start; i < end; ++i)
 		{
@@ -82,26 +82,42 @@ public class cmsc401
 						break;
 					}
 				}
-				
-				bestCuts[i] = closestRight + closestLeft;
 
-				if(closestRight + closestLeft > bestCut)
-				{
-					bestCut = closestRight + closestLeft;
-					cuttingPosition = i;
-					
-				}
-
+				bestCuts[i] = closestLeft + closestRight;
 			}
 		}
-		
-		for(int i = 0; i < bestCuts.length; ++i)
-		{
-			if(bestCuts[i] != bestCut)
-			{
-				
-			}
-		}
+
+		 if(clusterCut == false)
+		 {
+			 int maxCut = -100000;
+			 
+			 for(int i = 0; i < bestCuts.length; ++i)
+			 {
+				 if(bestCuts[i] > maxCut)
+				 {
+					 maxCut = bestCuts[i];
+				 }
+			 }
+			 
+			 for(int i = 0; i < bestCuts.length; ++i)
+			 {
+				 if(bestCuts[i] != maxCut)
+				 {
+					 bestCuts[i] = 0;
+				 }
+			 }
+			 
+			 int distanceFromMid = 1000000;
+			 for(int i = 0; i < bestCuts.length; ++i)
+			 {
+				 if(bestCuts[i] != 0 && Math.abs(i - middle) < distanceFromMid)
+				 {
+					 System.out.println("Position: " + i + " has cut " + bestCuts[i]);
+					 cuttingPosition = i;
+					 distanceFromMid = Math.abs(i - middle);
+				 }
+			 }
+		 }
 
 		minCost += segmentSize;
 		cutSpots[cuttingPosition] = 2;
@@ -133,7 +149,7 @@ public class cmsc401
 	{
 		int clusterBefore = cutSpots[clusterFound - 1];
 		int clusterAfter = cutSpots[clusterFound];
-		
+
 		if(clusterBefore == start && clusterAfter == 1)
 		{
 			return true;
