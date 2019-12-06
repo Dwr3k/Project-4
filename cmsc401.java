@@ -1,17 +1,17 @@
 //Derrick McGlone
 import java.util.Scanner;
-
 public class cmsc401 
 {
-	int[] cutSpots;
-	int minCost = 0;
-	int rodSize = 0;
-	int numCuts = 0;
+	int[] cutSpots; //Array that keeps track of what lines you can cut in the rod 
+	int minCost = 0; //Minimum cut cost
+	
+	int rodSize = 0; // Size of rod
+	int numCuts = 0; //Number of cuts that are possible
 
-	int[] secondCuts;
-	int secondMin = 0;
+	int[] secondCuts; //Copy of original array for second method attempt
+	int secondMin = 0; //Min Cost for the second method attempt
 
-	public void inputTime()//Takes the input and builds the array
+	public void inputTime()//Takes the input and builds the arrays
 	{
 		Scanner input = new Scanner(System.in);
 
@@ -33,19 +33,19 @@ public class cmsc401
 
 		input.close();
 
-		reduxTime(0, rodSize, 0);
-		cutTime(0, rodSize, 0);
+		reduxTime(0, rodSize, 0); //First rod cutting attempt
+		cutTime(0, rodSize, 0); //Second rod cutting attempt
 
 
-		if(minCost < secondMin)
+		if(minCost < secondMin) //If first attempt was smaller than second
 		{
 			System.out.println(minCost);
 		}
-		else if(minCost == secondMin)
+		else if(minCost == secondMin) //If both methods returned same answer (dont really need this one ig)
 		{
 			System.out.println(minCost);
 		}
-		else if(secondMin < minCost)
+		else if(secondMin < minCost) //If second attempt was smaller than the first
 		{
 			System.out.println(secondMin);
 		}
@@ -53,64 +53,64 @@ public class cmsc401
 
 	public void reduxTime(int start, int end, int cutsMade)
 	{
-		int cuttingPosition = 0;
-		int closestLeft = 0;
-		int closestRight = 0;
-		int segmentSize = end - start;
-		boolean clusterCut = false;
-		int middle = (start + end) /2;
+		int cuttingPosition = 0; //What line the rod will be cut at
+		int closestLeft = 0; //How close current cut position is to another cut line on the left (or end of rod if first cut line)
+		int closestRight = 0; //How close current cut position is to another cut line on the right (or end of rod if last cut line)
+		int segmentSize = end - start; //How big segment of rod we are going to cut is 
+		boolean clusterCut = false; //If all lines in segment are able to cut, just cut segment in half
+		int middle = (start + end) /2; //Where the middle of the segment is
 
-		int[] bestCuts = new int[rodSize + 1];
+		int[] bestCuts = new int[rodSize + 1]; //Array that keeps the sum of closestLeft and closestRight for each cut line
 
-		for(int i = start; i < end; ++i)
+		for(int i = start; i < end; ++i)//For loop that goes through all lines in segment
 		{
-			if(cutSpots[i] == 1 && clusterTime(i, start, end)) 
+			if(cutSpots[i] == 1 && clusterTime(i, start, end)) //If statement to see if a cut line is in a cluster
 			{
 				int clusterLength = 1;
 				int index = i;
 
-				while(clusterTime(index, start, end))
+				while(clusterTime(index, start, end))//Sees how many clusters there are 
 				{
 					++clusterLength;
 					++index;
 				}
 
-				if(clusterLength == segmentSize - 1) 
+				if(clusterLength == segmentSize - 1)//If rod segment is only cut lines do the special cut
 				{
 					clusterCut = true;
 					cuttingPosition = (end + start) / 2;
 				}
 			}
 
-			if(cutSpots[i] == 1 && clusterCut == false)
+			if(cutSpots[i] == 1 && clusterCut == false)//If segment is not made of only clusters, find every cut lines bestCuts
 			{	
-				for(int j = i - 1; j >= start; --j)
+				for(int j = i - 1; j >= start; --j)//For loop to see how far away cut line (or wall if end cut line) to the left 
 				{
-					if(cutSpots[j] == 1 || j == start)
+					if(cutSpots[j] == 1 || j == start)//If line is cut line or if you are at wall
 					{
-						closestLeft = i -j;
+						closestLeft = i - j;
 						break;
 					}
 				}
 
-				for(int k = i + 1; k <= end; ++k)
+				for(int k = i + 1; k <= end; ++k)//For loop to find closest cut line or wall to the right
 				{
-					if(cutSpots[k] == 1 || k == end)
+					if(cutSpots[k] == 1 || k == end)//If line is a cut line or if you are at wall
 					{
 						closestRight = k - i;
 						break;
 					}
 				}
 
-				bestCuts[i] = closestLeft + closestRight;
+				bestCuts[i] = closestLeft + closestRight;//Updates bestCuts array to have sum of closestLeft and closestRight at line position
 			}
 		}
 
-		if(clusterCut == false)
+		if(clusterCut == false)//If not doing special cluster cut
 		{
-			int maxCut = -100000;
+			int maxCut = -100000;//Keeps track of what the biggest bestCut value is
 
-			for(int i = 0; i < bestCuts.length; ++i)
+			for(int i = 0; i < bestCuts.length; ++i)//Finds biggest bestCut out of all lines in segment
 			{
 				if(bestCuts[i] > maxCut)
 				{
@@ -118,7 +118,7 @@ public class cmsc401
 				}
 			}
 
-			for(int i = 0; i < bestCuts.length; ++i)
+			for(int i = 0; i < bestCuts.length; ++i)//Goes through array, if cutLine bestCut is not maxCut, set it to 0
 			{
 				if(bestCuts[i] != maxCut)
 				{
@@ -126,10 +126,11 @@ public class cmsc401
 				}
 			}
 
-			int distanceFromMid = 1000000;
-			for(int i = 0; i < bestCuts.length; ++i)
+			int distanceFromMid = 1000000;//Keeps track of how far the current cutting Position is from the middle
+			
+			for(int i = 0; i < bestCuts.length; ++i)//If there are multiple cutLines with same bestCut, finds the one closest to segment middle
 			{
-				if(bestCuts[i] != 0 && Math.abs(i - middle) < distanceFromMid)
+				if(bestCuts[i] != 0 && Math.abs(i - middle) < distanceFromMid)//If cut line is closer to the middle, update cut position
 				{
 					//System.out.println("Position: " + i + " has cut " + bestCuts[i]);
 					cuttingPosition = i;
@@ -138,15 +139,15 @@ public class cmsc401
 			}
 		}
 
-		minCost += segmentSize;
-		cutSpots[cuttingPosition] = 2;
-		++cutsMade;
+		minCost += segmentSize;//Add segmentSize to minCost and do a "cut"
+		cutSpots[cuttingPosition] = 2;//Updates cut line to 2 to signify cuts been made
+		++cutsMade;//Update cuts made
 
 		//System.out.println(cuttingPosition);
 
 		if(cutsMade < numCuts)
 		{
-			for(int i = start; i < cuttingPosition; ++i)
+			for(int i = start; i < cuttingPosition; ++i)//Sees if there are any cut Lines to the left and if so, cut new bar segment
 			{
 				if(cutSpots[i] == 1)
 				{
@@ -154,7 +155,7 @@ public class cmsc401
 				}
 			}
 
-			for(int i = cuttingPosition; i < end; ++i)
+			for(int i = cuttingPosition; i < end; ++i)//Sees if there are any cut Lines to the right and if so, cut new bar segment
 			{
 				if(cutSpots[i] == 1)
 				{
@@ -222,15 +223,15 @@ public class cmsc401
 		int clusterBefore = cutSpots[clusterFound - 1];
 		int clusterAfter = cutSpots[clusterFound];
 
-		if(clusterBefore == start && clusterAfter == 1)
+		if(clusterBefore == start && clusterAfter == 1)// |start|CutLine|CutLine|
 		{
 			return true;
 		}
-		else if(clusterBefore == 1 && clusterAfter == 1)
+		else if(clusterBefore == 1 && clusterAfter == 1)// |CutLine|CutLine|CutLine|
 		{
 			return true;
 		}
-		else if(clusterBefore == 1 && clusterAfter == end)
+		else if(clusterBefore == 1 && clusterAfter == end)// |CutLine|CutLine|End|
 		{
 			return true;
 		}
