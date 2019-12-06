@@ -7,7 +7,9 @@ public class cmsc401
 	int minCost = 0;
 	int rodSize = 0;
 	int numCuts = 0;
-	int[] tempArray = null;
+	
+	int[] secondArray;
+	int secondMin = 0;
 
 
 
@@ -25,11 +27,15 @@ public class cmsc401
 		{
 			cutSpots[input.nextInt()] = 1;
 		}
+		
+		secondArray = cutSpots;
 
 		input.close();
 
 		reduxTime(0, rodSize, 0);
+		
 		System.out.println(minCost);
+		System.out.println(secondMin);
 	}
 
 	public void reduxTime(int start, int end, int cutsMade)
@@ -112,7 +118,7 @@ public class cmsc401
 			 {
 				 if(bestCuts[i] != 0 && Math.abs(i - middle) < distanceFromMid)
 				 {
-					 System.out.println("Position: " + i + " has cut " + bestCuts[i]);
+					 //System.out.println("Position: " + i + " has cut " + bestCuts[i]);
 					 cuttingPosition = i;
 					 distanceFromMid = Math.abs(i - middle);
 				 }
@@ -123,7 +129,7 @@ public class cmsc401
 		cutSpots[cuttingPosition] = 2;
 		++cutsMade;
 
-		System.out.println(cuttingPosition);
+		//System.out.println(cuttingPosition);
 
 		if(cutsMade < numCuts)
 		{
@@ -167,8 +173,7 @@ public class cmsc401
 			return false;
 		}
 	}
-
-
+	
 	public static void main(String[] args)
 	{
 		cmsc401 program = new cmsc401();
